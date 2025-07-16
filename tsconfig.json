@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@conduit/ui": ["./packages/ui/src"],
+      "@conduit/ui/*": ["./packages/ui/src/*"],
+      "@conduit/api": ["./packages/api/src"],
+      "@conduit/api/*": ["./packages/api/src/*"],
+      "@conduit/database": ["./packages/database/src"],
+      "@conduit/database/*": ["./packages/database/src/*"],
+      "@conduit/core": ["./packages/core/src"],
+      "@conduit/core/*": ["./packages/core/src/*"],
+      "@conduit/auth": ["./packages/auth/src"],
+      "@conduit/auth/*": ["./packages/auth/src/*"],
+      "@conduit/config": ["./packages/config/src"],
+      "@conduit/config/*": ["./packages/config/src/*"],
+      "@conduit/utils": ["./packages/utils/src"],
+      "@conduit/utils/*": ["./packages/utils/src/*"]
+    },
+    "types": ["node", "jest"]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".next"
+  ]
+} 

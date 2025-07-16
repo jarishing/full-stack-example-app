@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "conduit-test",
+    "version": "1.0.0",
+    "port": 3001,
+    "env": "test",
+    "logLevel": "error"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "conduit_test",
+    "ssl": false,
+    "pool": {
+      "min": 1,
+      "max": 5
+    }
+  },
+  "auth": {
+    "jwt": {
+      "secret": "test-jwt-secret-key-that-is-very-long-and-secure-for-testing-purposes",
+      "expiresIn": "1h"
+    },
+    "bcrypt": {
+      "rounds": 10
+    },
+    "session": {
+      "secret": "test-session-secret-key-for-testing",
+      "maxAge": 3600000
+    }
+  },
+  "security": {
+    "cors": {
+      "origin": "http://localhost:3000",
+      "credentials": true
+    },
+    "rateLimit": {
+      "windowMs": 900000,
+      "max": 1000
+    },
+    "helmet": {}
+  }
+} 
