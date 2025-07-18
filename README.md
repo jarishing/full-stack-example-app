@@ -160,10 +160,19 @@ yarn workspace @conduit/api dev      # Backend only
 
 ## 📚 **Documentation**
 
-- [Architecture Decision Records](./docs/adr/)
-- [API Documentation](./docs/api/)
-- [Deployment Guide](./docs/deployment/)
-- [Development Guide](./docs/development/)
+### **📖 Project Structure & Development**
+- **[📋 Quick Reference Guide](./docs/QUICK_REFERENCE.md)** - Fast lookup for common tasks
+- **[🏗️ Project Structure Reference](./docs/PROJECT_STRUCTURE.md)** - Comprehensive project organization guide
+- **[📖 Development Guide](./docs/guides/)** - Setup and development workflows
+
+### **🏛️ Architecture & Decisions**
+- **[📋 Architecture Decision Records](./docs/adr/)** - Technology choices and rationale
+- **[🏗️ Architecture Documentation](./docs/architecture/)** - System design and patterns
+- **[📡 API Documentation](./docs/api/)** - tRPC endpoints and authentication flows
+
+### **🚀 Deployment & Infrastructure**
+- **[🐳 Deployment Guide](./docs/deployment/)** - Production deployment procedures
+- **[🏗️ Infrastructure](./infrastructure/)** - Docker, Kubernetes, and Terraform configurations
 
 ## 🤝 **Contributing**
 

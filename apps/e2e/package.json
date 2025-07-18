@@ -1,0 +1,20 @@
+{
+  "name": "@conduit/e2e",
+  "version": "1.0.0",
+  "description": "End-to-end testing suite for Conduit Portfolio",
+  "scripts": {
+    "dev": "cypress open",
+    "test": "cypress run",
+    "test:headed": "cypress run --headed",
+    "test:chrome": "cypress run --browser chrome",
+    "test:firefox": "cypress run --browser firefox"
+  },
+  "dependencies": {
+    "cypress": "^13.6.0"
+  },
+  "devDependencies": {
+    "@cypress/code-coverage": "^3.12.8",
+    "@testing-library/cypress": "^10.0.1",
+    "typescript": "^5.3.3"
+  }
+} 
