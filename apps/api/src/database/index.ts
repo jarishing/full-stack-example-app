@@ -4,7 +4,7 @@ import * as schema from './schema'
 
 // Database connection
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/conduit_dev',
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/conduit_dev',
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,

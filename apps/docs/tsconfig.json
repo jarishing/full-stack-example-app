@@ -1,0 +1,16 @@
+{
+  "extends": "../../packages/config/typescript/react.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "allowJs": true,
+    "noEmit": true
+  },
+  "include": [
+    ".storybook/**/*",
+    "stories/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "storybook-static"
+  ]
+} 

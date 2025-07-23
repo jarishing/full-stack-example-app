@@ -2,26 +2,25 @@
 module.exports = {
   extends: [
     "./base.js",
-    "next/core-web-vitals",
+    "next/core-web-vitals", // This already includes plugin:react-hooks/recommended
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:jsx-a11y/recommended"
+    "plugin:jsx-a11y/recommended",
   ],
-  plugins: ["react", "react-hooks", "jsx-a11y"],
+  plugins: ["react", "jsx-a11y"], // Removed "react-hooks" since it's included by next/core-web-vitals
   parserOptions: {
     ecmaFeatures: {
-      jsx: true
-    }
+      jsx: true,
+    },
   },
   env: {
     browser: true,
     es2022: true,
-    node: true
+    node: true,
   },
   settings: {
     react: {
-      version: "detect"
-    }
+      version: "detect",
+    },
   },
   rules: {
     // React specific rules
@@ -32,7 +31,7 @@ module.exports = {
     "react/no-unescaped-entities": "off",
     "react/display-name": "off",
 
-    // React Hooks rules
+    // React Hooks rules (these rules are already enabled by next/core-web-vitals)
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
 
@@ -42,6 +41,6 @@ module.exports = {
     "jsx-a11y/no-static-element-interactions": "warn",
 
     // Next.js specific
-    "@next/next/no-html-link-for-pages": "off"
-  }
-}; 
+    "@next/next/no-html-link-for-pages": "off",
+  },
+};

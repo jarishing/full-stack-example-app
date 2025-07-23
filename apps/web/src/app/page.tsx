@@ -2,272 +2,227 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { Navigation } from '@/components/navigation'
 
-import { Button, Card, CardContent, CardHeader, CardTitle, Avatar } from '@conduit/ui'
-import { useAuthStore } from '@/store/auth'
-import type { Article } from '@conduit/api-types'
+interface Article {
+  slug: string
+  title: string
+  description: string
+  body: string
+  tagList: string[]
+  createdAt: string
+  updatedAt: string
+  favorited: boolean
+  favoritesCount: number
+  author: {
+    username: string
+    bio: string | null
+    image: string | null
+  }
+}
+
+interface ArticlesResponse {
+  articles: Article[]
+  articlesCount: number
+}
 
 export default function HomePage() {
-  const { data: session } = useSession()
-  const { user } = useAuthStore()
   const [articles, setArticles] = useState<Article[]>([])
-  const [popularTags, setPopularTags] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [tags, setTags] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'global' | 'feed'>('global')
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
 
   useEffect(() => {
-    loadArticles()
-    loadPopularTags()
-  }, [activeTab])
+    fetchArticles()
+    fetchTags()
+  }, [activeTab, selectedTag])
 
-  async function loadArticles() {
-    setIsLoading(true)
+  const fetchArticles = async () => {
+    setLoading(true)
     try {
-      // TODO: Replace with actual tRPC calls when server is ready
-      // const result = activeTab === 'feed' 
-      //   ? await trpc.articles.getFeed.query({ limit: 10 })
-      //   : await trpc.articles.getArticles.query({ limit: 10 })
-
-      // Mock articles data
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const endpoint = activeTab === 'feed' ? 'articles.feed' : 'articles.list'
+      const params = selectedTag ? `?tag=${selectedTag}` : ''
       
-      const mockArticles: Article[] = Array.from({ length: 5 }, (_, i) => ({
-        slug: `sample-article-${i + 1}`,
-        title: `How to Build Modern Web Applications ${i + 1}`,
-        description: `Learn the latest techniques and best practices for building scalable web applications with modern frameworks and tools.`,
-        body: 'Article content here...',
-        tagList: ['javascript', 'react', 'nextjs', 'typescript'].slice(0, Math.floor(Math.random() * 3) + 1),
-        createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
-        favorited: Math.random() > 0.5,
-        favoritesCount: Math.floor(Math.random() * 50),
-        author: {
-          username: ['john_doe', 'jane_smith', 'dev_guru', 'tech_writer'][Math.floor(Math.random() * 4)],
-          bio: 'Software developer and tech writer',
-          image: `https://images.unsplash.com/photo-${1472099645785 + i}?w=400&h=400&fit=crop&crop=face`,
-          following: Math.random() > 0.5,
-        },
-      }))
-
-      setArticles(mockArticles)
+      const response = await fetch(`http://localhost:4000/trpc/${endpoint}${params}`)
+      const data = await response.json()
+      
+      if (data.result?.data?.articles) {
+        setArticles(data.result.data.articles)
+      }
     } catch (error) {
-      console.error('Failed to load articles:', error)
+      console.error('Failed to fetch articles:', error)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  async function loadPopularTags() {
+  const fetchTags = async () => {
     try {
-      // TODO: Replace with actual tRPC call when server is ready
-      // const result = await trpc.tags.getTags.query()
+      const response = await fetch('http://localhost:4000/trpc/tags.popular')
+      const data = await response.json()
       
-      // Mock popular tags
-      const mockTags = [
-        'javascript', 'react', 'nextjs', 'typescript', 'nodejs',
-        'css', 'html', 'vue', 'angular', 'python', 'golang', 'rust'
-      ]
-      setPopularTags(mockTags)
+      if (data.result?.data?.tags) {
+        setTags(data.result.data.tags)
+      }
     } catch (error) {
-      console.error('Failed to load tags:', error)
+      console.error('Failed to fetch tags:', error)
     }
   }
 
-  async function handleFavoriteToggle(slug: string) {
-    try {
-      // TODO: Replace with actual tRPC call when server is ready
-      // const article = articles.find(a => a.slug === slug)
-      // if (article?.favorited) {
-      //   await trpc.articles.unfavoriteArticle.mutate({ slug })
-      // } else {
-      //   await trpc.articles.favoriteArticle.mutate({ slug })
-      // }
-
-      // Mock favorite toggle
-      setArticles(prev => prev.map(article => 
-        article.slug === slug 
-          ? { 
-              ...article, 
-              favorited: !article.favorited,
-              favoritesCount: article.favorited 
-                ? article.favoritesCount - 1 
-                : article.favoritesCount + 1
-            }
-          : article
-      ))
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error)
-    }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {/* Hero Section */}
-          {!session && !user && (
-            <div className="bg-green-500 text-white text-center py-16 mb-8 rounded-lg">
-              <h1 className="text-4xl font-bold mb-4">conduit</h1>
-              <p className="text-xl mb-6">A place to share your knowledge.</p>
-              <div className="space-x-4">
-                <Button asChild variant="secondary">
-                  <Link href="/register">Get Started</Link>
-                </Button>
-                <Button asChild variant="outline" className="text-white border-white hover:bg-white hover:text-green-500">
-                  <Link href="/login">Sign In</Link>
-                </Button>
-              </div>
-            </div>
-          )}
+    <div className="min-h-screen bg-white">
+      <Navigation />
 
-          {/* Feed Tabs */}
-          <div className="border-b mb-6">
-            <nav className="flex space-x-8">
-              {(session || user) && (
+      {/* Hero Section */}
+      <div className="bg-green-500 text-white py-20">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h1 className="text-5xl font-bold mb-4">conduit</h1>
+          <p className="text-xl opacity-90">A place to share your knowledge.</p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Articles Section */}
+          <div className="lg:col-span-3">
+            {/* Feed Toggle */}
+            <div className="border-b border-gray-200 mb-6">
+              <div className="flex">
                 <button
-                  onClick={() => setActiveTab('feed')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'feed'
+                  onClick={() => {
+                    setActiveTab('global')
+                    setSelectedTag(null)
+                  }}
+                  className={`px-4 py-2 border-b-2 font-medium text-sm ${
+                    activeTab === 'global' && !selectedTag
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Global Feed
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('feed')
+                    setSelectedTag(null)
+                  }}
+                  className={`px-4 py-2 border-b-2 font-medium text-sm ${
+                    activeTab === 'feed' && !selectedTag
                       ? 'border-green-500 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   Your Feed
                 </button>
-              )}
-              <button
-                onClick={() => setActiveTab('global')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'global'
-                    ? 'border-green-500 text-green-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Global Feed
-              </button>
-            </nav>
-          </div>
+                {selectedTag && (
+                  <button
+                    className="px-4 py-2 border-b-2 border-green-500 text-green-600 font-medium text-sm"
+                  >
+                    # {selectedTag}
+                  </button>
+                )}
+              </div>
+            </div>
 
-          {/* Articles */}
-          <div className="space-y-4">
-            {isLoading ? (
-              // Loading skeleton
-              Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="animate-pulse">
-                      <div className="flex items-center space-x-2 mb-4">
-                        <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
-                        <div className="h-4 w-20 bg-gray-200 rounded"></div>
-                        <div className="h-4 w-16 bg-gray-200 rounded"></div>
-                      </div>
-                      <div className="h-6 w-3/4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-4 w-full bg-gray-200 rounded mb-4"></div>
-                      <div className="flex space-x-2">
-                        <div className="h-4 w-16 bg-gray-200 rounded"></div>
-                        <div className="h-4 w-16 bg-gray-200 rounded"></div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+            {/* Articles List */}
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="text-gray-500">Loading articles...</div>
+              </div>
             ) : articles.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No articles yet.
+              <div className="text-center py-8">
+                <div className="text-gray-500">No articles are here... yet.</div>
               </div>
             ) : (
-              articles.map((article) => (
-                <Card key={article.slug}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Avatar
-                            src={article.author.image}
-                            alt={article.author.username}
-                            fallback={article.author.username[0]}
-                            size="sm"
-                          />
-                          <Link href={`/profile/${article.author.username}`}>
-                            <span className="font-medium hover:text-green-600 transition-colors">
-                              {article.author.username}
-                            </span>
+              <div className="space-y-6">
+                {articles.map((article) => (
+                  <div key={article.slug} className="border-b border-gray-200 pb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center">
+                        <img
+                          src={article.author.image || `https://api.realworld.io/images/smiley-cyrus.jpeg`}
+                          alt={article.author.username}
+                          className="w-8 h-8 rounded-full mr-2"
+                        />
+                        <div>
+                          <Link 
+                            href={`/profile/${article.author.username}`}
+                            className="text-green-500 font-medium hover:underline"
+                          >
+                            {article.author.username}
                           </Link>
-                          <span className="text-gray-500 text-sm">
-                            {new Date(article.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        
-                        <Link href={`/article/${article.slug}`}>
-                          <h3 className="text-xl font-bold mb-2 hover:text-green-600 transition-colors">
-                            {article.title}
-                          </h3>
-                        </Link>
-                        
-                        <p className="text-gray-600 mb-4">{article.description}</p>
-                        
-                        <div className="flex items-center justify-between">
-                          <Link href={`/article/${article.slug}`}>
-                            <span className="text-gray-400 text-sm hover:text-gray-600">
-                              Read more...
-                            </span>
-                          </Link>
-                          
-                          <div className="flex items-center space-x-2">
-                            <div className="flex flex-wrap gap-1">
-                              {article.tagList.slice(0, 3).map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                            
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleFavoriteToggle(article.slug)}
-                              className={article.favorited 
-                                ? "text-green-600 border-green-600 bg-green-50" 
-                                : "text-green-600 border-green-600 hover:bg-green-50"
-                              }
-                            >
-                              ♥ {article.favoritesCount}
-                            </Button>
+                          <div className="text-gray-400 text-sm">
+                            {formatDate(article.createdAt)}
                           </div>
                         </div>
                       </div>
+                      <button className="text-green-500 border border-green-500 px-2 py-1 rounded text-sm hover:bg-green-500 hover:text-white">
+                        <span className="mr-1">❤️</span>
+                        {article.favoritesCount}
+                      </button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
+                    
+                    <Link href={`/article/${article.slug}`} className="block hover:no-underline">
+                      <h2 className="text-xl font-bold text-gray-900 mb-2 hover:text-gray-700">
+                        {article.title}
+                      </h2>
+                      <p className="text-gray-600 mb-3">
+                        {article.description}
+                      </p>
+                    </Link>
+                    
+                    <div className="flex items-center justify-between">
+                      <Link 
+                        href={`/article/${article.slug}`}
+                        className="text-gray-400 text-sm hover:text-gray-600"
+                      >
+                        Read more...
+                      </Link>
+                      <div className="flex flex-wrap gap-1">
+                        {article.tagList.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full cursor-pointer hover:bg-gray-300"
+                            onClick={() => setSelectedTag(tag)}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Popular Tags</CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-gray-100 rounded p-4">
+              <h3 className="font-medium text-gray-900 mb-3">Popular Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {popularTags.map((tag) => (
+                {tags.map((tag) => (
                   <button
                     key={tag}
-                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
+                    onClick={() => setSelectedTag(tag)}
+                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
                   >
                     {tag}
                   </button>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>

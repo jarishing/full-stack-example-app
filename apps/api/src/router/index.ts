@@ -84,6 +84,7 @@ export const appRouter = router({
             token,
           }
         } catch (error: any) {
+          console.error('Database error details:', error)
           if (error.code === '23505') { // Unique constraint violation
             throw new TRPCError({
               code: 'CONFLICT',
@@ -334,4 +335,7 @@ export const appRouter = router({
     .query(() => {
       return { status: 'ok', timestamp: new Date().toISOString() }
     }),
-}) 
+})
+
+// Export the router type for use in the frontend
+export type AppRouter = typeof appRouter 

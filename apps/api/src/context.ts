@@ -1,6 +1,8 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import jwt from 'jsonwebtoken'
-import { db } from './database'
+import { db } from './database/index'
+
+console.log('Database connection loaded:', !!db)
 
 export interface User {
   id: string
@@ -24,6 +26,8 @@ export async function createContext({
   req: FastifyRequest
   res: FastifyReply 
 }): Promise<Context> {
+  console.log('Creating context with db:', !!db)
+  
   // Extract token from Authorization header
   const token = req.headers.authorization?.replace('Bearer ', '')
   

@@ -1,8 +1,16 @@
+import dotenv from 'dotenv'
+import path from 'path'
+
+// Load .env from project root (two levels up from apps/api/src)
+dotenv.config({ path: path.join(__dirname, '../../../.env') })
+
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
-import { appRouter } from './router'
+import { appRouter } from './router/index'
 import { createContext } from './context'
+
+console.log('Environment check - DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET')
 
 const server = Fastify({
   maxParamLength: 5000,
@@ -25,9 +33,6 @@ server.register(fastifyTRPCPlugin, {
   trpcOptions: { 
     router: appRouter, 
     createContext,
-    onError({ path, error }) {
-      console.error(`❌ tRPC failed on ${path ?? '<no-path>'}:`, error)
-    },
   },
 })
 

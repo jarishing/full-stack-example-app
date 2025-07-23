@@ -1,76 +1,117 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
-import { Button } from "@conduit/ui"
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+
+interface User {
+  username: string
+  email: string
+  bio?: string
+  image?: string
+}
 
 export function Navigation() {
-  const { data: session, status } = useSession()
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        setIsLoading(false)
+        return
+      }
+
+      const response = await fetch('http://localhost:4000/trpc/auth.me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.result?.data?.user) {
+          setUser(data.result.data.user)
+        }
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken')
+    setUser(null)
+    window.location.href = '/'
+  }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold text-xl">conduit</span>
+    <nav className="bg-white border-b border-gray-200">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link href="/" className="text-2xl font-bold text-green-500">
+            conduit
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link
-              href="/"
-              className="transition-colors hover:text-foreground/80 text-foreground"
-            >
+          
+          <div className="flex items-center space-x-4">
+            <Link href="/" className="text-gray-700 hover:text-gray-900">
               Home
             </Link>
-            {session && (
+            
+            {!isLoading && (
               <>
-                <Link
-                  href="/articles"
-                  className="transition-colors hover:text-foreground/80 text-foreground/60"
-                >
-                  Articles
-                </Link>
-                <Link
-                  href="/editor"
-                  className="transition-colors hover:text-foreground/80 text-foreground/60"
-                >
-                  New Article
-                </Link>
+                {user ? (
+                  // Authenticated user navigation
+                  <>
+                    <Link href="/editor" className="text-gray-700 hover:text-gray-900">
+                      <span className="mr-1">✏️</span>
+                      New Article
+                    </Link>
+                    <Link href="/settings" className="text-gray-700 hover:text-gray-900">
+                      <span className="mr-1">⚙️</span>
+                      Settings
+                    </Link>
+                    <Link 
+                      href={`/profile/${user.username}`} 
+                      className="flex items-center text-gray-700 hover:text-gray-900"
+                    >
+                      <img
+                        src={user.image || `https://api.realworld.io/images/smiley-cyrus.jpeg`}
+                        alt={user.username}
+                        className="w-6 h-6 rounded-full mr-1"
+                      />
+                      {user.username}
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="text-gray-700 hover:text-gray-900"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  // Guest navigation
+                  <>
+                    <Link href="/login" className="text-gray-700 hover:text-gray-900">
+                      Sign in
+                    </Link>
+                    <Link href="/register" className="text-gray-700 hover:text-gray-900 border border-gray-300 px-3 py-1 rounded">
+                      Sign up
+                    </Link>
+                  </>
+                )}
               </>
             )}
-          </nav>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-2">
-            {status === "loading" ? (
-              <div>Loading...</div>
-            ) : session ? (
-              <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/profile">
-                    {(session.user as any)?.username || session.user?.name}
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => signOut()}
-                >
-                  Sign out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/login">Sign in</Link>
-                </Button>
-                <Button size="sm" asChild>
-                  <Link href="/register">Sign up</Link>
-                </Button>
-              </>
-            )}
-          </nav>
+          </div>
         </div>
       </div>
-    </header>
+    </nav>
   )
 } 

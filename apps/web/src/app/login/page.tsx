@@ -1,117 +1,101 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
-import { useForm } from "react-hook-form"
-import Link from "next/link"
-import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle, Form, FormField, FormLabel, FormMessage } from "@conduit/ui"
-
-interface LoginFormData {
-  email: string
-  password: string
-}
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Navigation } from '@/components/navigation'
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string>("")
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
 
-  const form = useForm<LoginFormData>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  })
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
-  const onSubmit = async (data: LoginFormData) => {
     try {
-      setIsLoading(true)
-      setError("")
-
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
+      const response = await fetch('http://localhost:4000/trpc/auth.login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       })
 
-      if (result?.error) {
-        setError("Invalid email or password")
+      const data = await response.json()
+
+      if (response.ok && data.result?.data?.token) {
+        // Store the token in localStorage
+        localStorage.setItem('authToken', data.result.data.token)
+        
+        // Redirect to home page
+        router.push('/')
       } else {
-        router.push("/")
-        router.refresh()
+        setError(data.error?.message || 'Login failed')
       }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
+    } catch (err) {
+      setError('An error occurred during login')
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Sign in</CardTitle>
-            <CardDescription className="text-center">
-              Enter your email and password to sign in to your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField>
-                <FormLabel htmlFor="email">Email</FormLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="john@example.com"
-                  disabled={isLoading}
-                  {...form.register("email")}
-                />
-                <FormMessage>
-                  {form.formState.errors.email?.message}
-                </FormMessage>
-              </FormField>
-              
-              <FormField>
-                <FormLabel htmlFor="password">Password</FormLabel>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  disabled={isLoading}
-                  {...form.register("password")}
-                />
-                <FormMessage>
-                  {form.formState.errors.password?.message}
-                </FormMessage>
-              </FormField>
+    <div className="min-h-screen bg-white">
+      <Navigation />
+      
+      <div className="max-w-md mx-auto pt-20 px-4">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign in</h1>
+          <Link href="/register" className="text-green-500 hover:underline">
+            Need an account?
+          </Link>
+        </div>
 
-              {error && (
-                <FormMessage>{error}</FormMessage>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
-            </Form>
-
-            <div className="text-center text-sm mt-4">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/register"
-                className="underline underline-offset-4 hover:text-primary"
-              >
-                Sign up
-              </Link>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
             </div>
-          </CardContent>
-        </Card>
+          )}
+
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+            />
+          </div>
+
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-lg font-medium"
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
       </div>
     </div>
   )

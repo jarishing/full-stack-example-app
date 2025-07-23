@@ -5,25 +5,24 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
     "type-check": "tsc --noEmit",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate:pg",
     "db:studio": "drizzle-kit studio",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint": "echo 'Database package: No source files to lint yet'",
+    "lint:fix": "echo 'Database package: No source files to lint yet'"
   },
   "dependencies": {
     "@conduit/utils": "*",
     "drizzle-orm": "^0.29.1",
     "pg": "^8.11.3",
-    "zod": "^3.22.4"
+    "drizzle-kit": "^0.20.7"
   },
   "devDependencies": {
     "@types/pg": "^8.10.9",
-    "@types/node": "^20.9.0",
-    "drizzle-kit": "^0.20.6",
     "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
   }
 } 

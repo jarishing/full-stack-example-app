@@ -3,140 +3,114 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Form, FormField, FormLabel, FormMessage, Input } from '@conduit/ui'
-import { useAuthStore } from '@/store/auth'
-
-const registerFormSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-})
-
-type RegisterFormValues = z.infer<typeof registerFormSchema>
+import { Navigation } from '@/components/navigation'
 
 export default function RegisterPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
-  const { setUser } = useAuthStore()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerFormSchema),
-  })
-
-  async function onSubmit(values: RegisterFormValues) {
-    setIsLoading(true)
-    setError(null)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
     try {
-      // TODO: Replace with actual tRPC call when server is ready
-      // const result = await trpc.auth.register.mutate({
-      //   user: values
-      // })
+      const response = await fetch('http://localhost:4000/trpc/auth.register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
+      })
 
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock successful registration
-      const mockUser = {
-        email: values.email,
-        token: 'mock-jwt-token-' + Date.now(),
-        username: values.username,
-        bio: null,
-        image: null,
+      const data = await response.json()
+
+      if (response.ok && data.result?.data?.token) {
+        // Store the token in localStorage
+        localStorage.setItem('authToken', data.result.data.token)
+        
+        // Redirect to home page
+        router.push('/')
+      } else {
+        setError(data.error?.message || 'Registration failed')
       }
-
-      setUser(mockUser)
-      router.push('/')
     } catch (err) {
-      console.error('Registration error:', err)
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
+      setError('An error occurred during registration')
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Create account</CardTitle>
-          <CardDescription>
-            Enter your information to create an account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form onSubmit={handleSubmit(onSubmit)}>
-            <FormField>
-              <FormLabel htmlFor="username">Username</FormLabel>
-              <Input
-                id="username"
-                {...register('username')}
-                placeholder="Enter your username"
-                disabled={isLoading}
-              />
-              {errors.username && (
-                <FormMessage>{errors.username.message}</FormMessage>
-              )}
-            </FormField>
-            
-            <FormField>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <Input
-                id="email"
-                type="email"
-                {...register('email')}
-                placeholder="Enter your email"
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <FormMessage>{errors.email.message}</FormMessage>
-              )}
-            </FormField>
+    <div className="min-h-screen bg-white">
+      <Navigation />
+      
+      <div className="max-w-md mx-auto pt-20 px-4">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign up</h1>
+          <Link href="/login" className="text-green-500 hover:underline">
+            Have an account?
+          </Link>
+        </div>
 
-            <FormField>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <Input
-                id="password"
-                type="password"
-                {...register('password')}
-                placeholder="Enter your password"
-                disabled={isLoading}
-              />
-              {errors.password && (
-                <FormMessage>{errors.password.message}</FormMessage>
-              )}
-            </FormField>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
-                {error}
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create account'}
-            </Button>
-          </Form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link href="/login" className="text-blue-600 hover:text-blue-500 font-medium">
-                Sign in
-              </Link>
-            </p>
+          <div>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+            />
           </div>
-        </CardContent>
-      </Card>
+
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+            />
+          </div>
+
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-lg font-medium"
+          >
+            {loading ? 'Creating account...' : 'Sign up'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 } 

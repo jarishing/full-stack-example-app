@@ -1,13 +1,11 @@
 import { createTRPCReact } from '@trpc/react-query'
+// TODO: Fix type imports from backend
 // import type { AppRouter } from '@conduit/api-types'
 
-// Temporary: Use any type until we have a real tRPC server
+// Temporary: Use any type until we resolve type sharing between packages
 export const trpc = createTRPCReact<any>()
 
-// tRPC client will be created in the providers with proper configuration
-export { trpc as default }
-
-function getAuthHeader() {
+export function getAuthHeader() {
   // Get auth token from localStorage (Zustand persist storage)
   if (typeof window !== 'undefined') {
     try {
@@ -15,7 +13,7 @@ function getAuthHeader() {
       if (authStorage) {
         const { state } = JSON.parse(authStorage)
         if (state.token) {
-          return `Token ${state.token}`
+          return `Bearer ${state.token}`
         }
       }
     } catch (error) {
@@ -24,3 +22,5 @@ function getAuthHeader() {
   }
   return ''
 }
+
+export { trpc as default }

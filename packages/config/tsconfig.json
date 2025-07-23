@@ -1,0 +1,17 @@
+{
+  "extends": "@conduit/config/typescript/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "noEmit": false
+  },
+  "include": [
+    "eslint/**/*.js",
+    "prettier/**/*.js",
+    "typescript/**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+} 

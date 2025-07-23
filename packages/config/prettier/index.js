@@ -12,23 +12,23 @@ module.exports = {
   arrowParens: "always",
   endOfLine: "lf",
   experimentalTernaries: false,
-  
+
   // Plugin configurations
   plugins: ["prettier-plugin-packagejson", "prettier-plugin-organize-imports"],
-  
+
   overrides: [
     {
       files: "*.json",
       options: {
-        printWidth: 120
-      }
+        printWidth: 120,
+      },
     },
     {
       files: "*.md",
       options: {
         printWidth: 80,
-        proseWrap: "always"
-      }
-    }
-  ]
-}; 
+        proseWrap: "always",
+      },
+    },
+  ],
+};

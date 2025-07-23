@@ -1,20 +1,21 @@
-import * as React from "react"
-import { cn } from "./lib/utils"
+import * as React from "react";
+
+import { cn } from "./lib/utils";
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
-  src?: string | null
-  alt?: string
-  fallback?: string
-  size?: "sm" | "md" | "lg"
+  src?: string | null;
+  alt?: string;
+  fallback?: string;
+  size?: "sm" | "md" | "lg";
 }
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, src, alt, fallback, size = "md", ...props }, ref) => {
     const sizeClasses = {
       sm: "h-8 w-8 text-xs",
-      md: "h-10 w-10 text-sm", 
-      lg: "h-16 w-16 text-lg"
-    }
+      md: "h-10 w-10 text-sm",
+      lg: "h-16 w-16 text-lg",
+    };
 
     return (
       <div
@@ -22,11 +23,12 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         className={cn(
           "relative flex shrink-0 overflow-hidden rounded-full",
           sizeClasses[size],
-          className
+          className,
         )}
         {...props}
       >
         {src ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={src}
             alt={alt || "User avatar"}
@@ -38,9 +40,9 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
           </div>
         )}
       </div>
-    )
-  }
-)
-Avatar.displayName = "Avatar"
+    );
+  },
+);
+Avatar.displayName = "Avatar";
 
-export { Avatar } 
+export { Avatar };
