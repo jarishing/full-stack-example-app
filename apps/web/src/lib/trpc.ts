@@ -1,9 +1,7 @@
 import { createTRPCReact } from '@trpc/react-query'
-// TODO: Fix type imports from backend
-// import type { AppRouter } from '@conduit/api-types'
+import type { AppRouter } from '../../../api/src/router/index'
 
-// Temporary: Use any type until we resolve type sharing between packages
-export const trpc = createTRPCReact<any>()
+export const trpc = createTRPCReact<AppRouter>()
 
 export function getAuthHeader() {
   // Get auth token from localStorage (Zustand persist storage)
